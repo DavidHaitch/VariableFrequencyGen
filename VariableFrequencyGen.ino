@@ -30,7 +30,7 @@ double minFreq = 5;
 double maxFreq = 500;
 double freq = maxFreq / 2;
 int freqSetting = 512;
-int gainSetting = 127;
+int gainSetting = 512;
 float gain = 0.5;
 void setup()
 {
@@ -38,8 +38,8 @@ void setup()
   dac.analogReference(INTERNAL);
   pinMode(FREQ_FLOOR_PIN, INPUT);
   pinMode(FREQ_CEILING_PIN, INPUT);
-  pinMode(FREQ_A_PIN, INPUT_PULLUP);
-  pinMode(FREQ_B_PIN, INPUT_PULLUP);
+  //pinMode(FREQ_A_PIN, INPUT_PULLUP);
+  //pinMode(FREQ_B_PIN, INPUT_PULLUP);
   pinMode(VOL_A_PIN, INPUT_PULLUP);
   pinMode(VOL_B_PIN, INPUT_PULLUP);
   freqDial.write(freqSetting);
@@ -57,12 +57,12 @@ void loop()
   AudioNoInterrupts();
   minFreq = mapfloat(analogRead(FREQ_FLOOR_PIN), 0.0, 1023.0, 5.0, 249.0);
   maxFreq = mapfloat(analogRead(FREQ_CEILING_PIN), 0.0, 1023.0, 250.0, 500.0);
-
   int newFreqSetting, newGainSetting;
   newFreqSetting = freqDial.read();
   newGainSetting = volumeDial.read();
   if (newFreqSetting != freqSetting)
   {
+
     int delta = newFreqSetting - freqSetting;
     freqSetting += delta * FREQ_COARSENESS;
   }
@@ -73,10 +73,26 @@ void loop()
     gainSetting += delta * GAIN_COARSENESS;
   }
 
-  if(freqSetting > 1023) { freqSetting = 1023; freqDial.write(freqSetting); }
-  if(freqSetting < 0) { freqSetting = 0; freqDial.write(freqSetting); }
-  if(gainSetting > 1023) { gainSetting = 1023; volumeDial.write(gainSetting); }
-  if(gainSetting < 0) { gainSetting = 0; volumeDial.write(gainSetting); }
+  if (freqSetting > 1023) {
+    freqSetting = 1023;
+    freqDial.write(freqSetting);
+  }
+  if (freqSetting < 0) {
+    freqSetting = 0;
+    freqDial.write(freqSetting);
+  }
+  if (gainSetting > 1023) {
+    gainSetting = 1023;
+    volumeDial.write(gainSetting);
+  }
+  if (gainSetting < 0) {
+    gainSetting = 0;
+    volumeDial.write(gainSetting);
+  }
+  
+  Serial.print(freqSetting);
+  Serial.print("\t");
+  Serial.println(gainSetting);
   freq = mapfloat(freqSetting, 0.0, 1023.0, minFreq, maxFreq);
   gain = mapfloat(gainSetting, 0.0, 1023.0, VOL_MIN, 1.0);
   waveform.frequency(freq);
